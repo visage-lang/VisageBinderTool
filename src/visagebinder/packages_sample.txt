@@ -18,3 +18,4 @@ javafx.scene.effect.Reflection
 javafx.scene.effect.SepiaTone
 javafx.scene.effect.Shadow
 javafx.scene.control.Button
+javafx.scene.control.CheckBox
