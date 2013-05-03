@@ -37,7 +37,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,6 +76,8 @@ public class Visagebinder {
                 fw.write(customclass.toString());
                 fw.close();
             }
+            
+            
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(Visagebinder.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -83,9 +88,9 @@ public class Visagebinder {
             //Initialise the property name and data type
             Property p = new Property();
             p.setPropertyName(field.getName());
-            p.setPropertyType(field.getType().getSimpleName());
             p.setClassName(c.getSimpleName());
-
+            p.setPropertyType(getGenericTypeName(field));
+           
 
             if (Modifier.isFinal(field.getModifiers()) == false) {
                 try {
@@ -110,6 +115,25 @@ public class Visagebinder {
             customclass.getPropertyList().add(p.toString());
 
         }
+    }
+
+    public static String getGenericTypeName(Field field) {
+         if (javafx.beans.property.Property.class.isAssignableFrom(field.getType())) {
+                Type type = (Type) field.getGenericType();
+                if (type instanceof ParameterizedType) {
+                    //field is a parameterized generic type
+                    ParameterizedType gentype = (ParameterizedType) type;
+                    Class<?> integerListClass = (Class<?>) gentype.getActualTypeArguments()[0];
+                    String gentypeName = integerListClass.getName();
+                    String typeName = field.getType().getSimpleName()+"<"+gentypeName+">";
+                    return typeName;
+                }else if(field.getType().getSimpleName().endsWith("Property")){
+                    //its a primitive type Property field
+                    return field.getType().getSimpleName().replace("Property", "");                            
+                }                   
+            }
+         //normal variable
+        return field.getType().getSimpleName();
     }
 
     public static void println(String message) {
